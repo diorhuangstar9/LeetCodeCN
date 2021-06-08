@@ -18,6 +18,73 @@ namespace LeetCodeCN.leetcode
             int avg = sum / k;
             if (avg * k != sum)
                 return false;
+            //Console.WriteLine($"avg:{avg}");
+
+            // build samesum subset dict
+            var sameSumSubsetDict = new Dictionary<int, IEnumerable<string>>();
+            for (var i = 1; i <= nums.Length; i++)
+            {
+                var avgSumSubset = BuildSameSumSubsetDict(i, avg, 0, nums);
+                if (avgSumSubset.Any())
+                    sameSumSubsetDict.Add(i, avgSumSubset);
+            }
+            // select k subsets whether possible according to dict
+
+
+            //foreach (var subset in sameSumSubsetDict)
+            //{
+            //    Console.Write(subset.Key);
+            //    Console.Write("(index):");
+            //    Console.WriteLine(string.Join(';', subset.Value));
+
+            //    Console.Write(subset.Key);
+            //    Console.Write("(value):");
+            //    Console.WriteLine(string.Join(';', subset.Value.Select(x =>
+            //        string.Join(",", x.Split(",").Select(idx => nums[int.Parse(idx)])))));
+            //}
+
+            return false;
+        }
+
+        private IEnumerable<string> BuildSameSumSubsetDict(
+            int sumNumCnt, int leftSum, int startIndex, int[] nums)
+        {
+            var sumSubSets = new List<string>();
+            if (sumNumCnt <= 0)
+                return sumSubSets;
+            for (var i = startIndex; i < nums.Length; i++)
+            {
+                if (nums[i] > leftSum)
+                    continue;
+                else if (nums[i] == leftSum && sumNumCnt == 1)
+                    sumSubSets.Add(i.ToString());
+                else
+                {
+                    var nextSumSubSets = BuildSameSumSubsetDict(
+                        sumNumCnt - 1, leftSum - nums[i], i + 1, nums);
+                    if (nextSumSubSets.Any())
+                        sumSubSets.AddRange(nextSumSubSets.Select(x => $"{i},{x}"));
+                }
+            }
+            return sumSubSets;
+        }
+
+        private bool CanPartitionSubSet(IEnumerable<int> usedNumIndexes, int j)
+        {
+            return false;
+
+        }
+
+        public bool CanPartitionKSubsets_Deprecated(int[] nums, int k)
+        {
+            // divided num is int
+            var sum = 0;
+            foreach (var num in nums)
+                sum += num;
+            int avg = sum / k;
+            if (avg * k != sum)
+                return false;
+            Console.WriteLine($"avg={avg}");
             // add all possible num to partitionSets
             List<int[]> allPartitionSets = null;
             foreach (var num in nums)
@@ -25,29 +92,31 @@ namespace LeetCodeCN.leetcode
                 var newPartitionSets = new List<int[]>();
                 if (allPartitionSets == null || allPartitionSets.Count <= 0)
                 {
-                    newPartitionSets.AddRange(HandlePartitionSets(null, k, num));
+                    newPartitionSets.AddRange(HandlePartitionSets(null, k, num, avg));
                 }
                 else
                 {
                     foreach (var originalPartitionSet in allPartitionSets)
                     {
-                        newPartitionSets.AddRange(HandlePartitionSets(originalPartitionSet, k, num));
+                        newPartitionSets.AddRange(HandlePartitionSets(originalPartitionSet, k, num, avg));
                     }
                 }
+                foreach (var set in newPartitionSets)
+                    Console.WriteLine(string.Join(',', set));
                 allPartitionSets = newPartitionSets;
             }
 
             for (var i = allPartitionSets.Count - 1; i >= 0; i--)
             {
                 var partitionSet = allPartitionSets[i];
-                //Console.WriteLine(string.Join(',', partitionSet));
+                Console.WriteLine(string.Join(',', partitionSet));
                 if (partitionSet.All(x => x == avg))
                     return true;
             }
             return false;
         }
 
-        private List<int[]> HandlePartitionSets(int[] originalPartitionSet, int k, int num)
+        private List<int[]> HandlePartitionSets(int[] originalPartitionSet, int k, int num, int avg)
         {
             var newPartitionSets = new List<int[]>();
             for (var i = 0; i < k; i++)
@@ -55,7 +124,8 @@ namespace LeetCodeCN.leetcode
                 var newPartitionSet = originalPartitionSet == null ?
                     new int[k] : (int[])originalPartitionSet.Clone();
                 newPartitionSet[i] += num;
-                newPartitionSets.Add(newPartitionSet);
+                if (newPartitionSet[i] <= avg)
+                    newPartitionSets.Add(newPartitionSet);
             }
 
             return newPartitionSets;

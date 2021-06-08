@@ -6,8 +6,10 @@ namespace LeetCodeCN
     {
         static void Main(string[] args)
         {
+            //[3522,181,521,515,304,123,2512,312,922,407,146,1932,4037,2646,3871,269]
+            // 5
             var result =
-                new leetcode.Solution_698().CanPartitionKSubsets(new int[] { 5, 8, 3, 8, 1, 6, 1, 5, 1, 6 }, 4);
+                new leetcode.Solution_698().CanPartitionKSubsets(new int[] { 3522, 181, 521, 515, 304, 123, 2512, 312, 922, 407, 146, 1932, 4037, 2646, 3871, 269 }, 5);
             Console.WriteLine(result);
         }
     }
