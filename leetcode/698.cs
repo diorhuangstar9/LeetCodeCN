@@ -21,15 +21,24 @@ namespace LeetCodeCN.leetcode
             //Console.WriteLine($"avg:{avg}");
 
             // build samesum subset dict
-            var sameSumSubsetDict = new Dictionary<int, IEnumerable<string>>();
+            var sameSumSubsetList = new List<string>();
             for (var i = 1; i <= nums.Length; i++)
             {
                 var avgSumSubset = BuildSameSumSubsetDict(i, avg, 0, nums);
                 if (avgSumSubset.Any())
-                    sameSumSubsetDict.Add(i, avgSumSubset);
+                    sameSumSubsetList.AddRange(avgSumSubset);
             }
-            // select k subsets whether possible according to dict
+            if (sameSumSubsetList.Count < k)
+                return false;
+            // select k subsets in dict
+            //return CanSubsetBeSelected(k, new List<int>(), nums.Length, 0, sameSumSubsetList);
 
+            for (var i = 0; i <= sameSumSubsetList.Count - k; i++)
+            {
+                if (CanSubsetBeSelected(k - 1, sameSumSubsetList[i].Split(',').Select(x => int.Parse(x)).ToList(),
+                    nums.Length, i, sameSumSubsetList))
+                    return true;
+            }
 
             //foreach (var subset in sameSumSubsetDict)
             //{
@@ -42,8 +51,36 @@ namespace LeetCodeCN.leetcode
             //    Console.WriteLine(string.Join(';', subset.Value.Select(x =>
             //        string.Join(",", x.Split(",").Select(idx => nums[int.Parse(idx)])))));
             //}
-
             return false;
+        }
+
+        private bool CanSubsetBeSelected(int leftSumSubSetCnt, List<int> usedNumIndexes, int numsLength,
+            int currentSubSetIndex, List<string> sameSumSubsetList)
+        {
+            if (leftSumSubSetCnt <= 0)
+                return usedNumIndexes.Count >= numsLength;
+            if (currentSubSetIndex >= sameSumSubsetList.Count)
+                return false;
+            if (leftSumSubSetCnt > sameSumSubsetList.Count - currentSubSetIndex)
+                return false;
+
+            var currentNotSelect = CanSubsetBeSelected(leftSumSubSetCnt, usedNumIndexes, numsLength,
+                    currentSubSetIndex + 1, sameSumSubsetList);
+            var currentNumIndexes = sameSumSubsetList[currentSubSetIndex].Split(',').
+                Select(idx => int.Parse(idx)).ToList();
+            var isIntersect = currentNumIndexes.Any(x => usedNumIndexes.Contains(x));
+            if (isIntersect)
+                return currentNotSelect;
+            else if (currentNotSelect)
+                return true;
+            else
+            {
+                currentNumIndexes.AddRange(usedNumIndexes);
+                var currentSelect = CanSubsetBeSelected(leftSumSubSetCnt - 1, currentNumIndexes, numsLength,
+                    currentSubSetIndex + 1, sameSumSubsetList);
+                return currentSelect;
+            }
+
         }
 
         private IEnumerable<string> BuildSameSumSubsetDict(
